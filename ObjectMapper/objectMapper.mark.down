@@ -1,0 +1,183 @@
+`formal`
+
+```
+class User: Mappable {
+    var username: String?
+    var age: Int?
+    var weight: Double!
+    var array: [Any]?
+    var dictionary: [String : Any] = [:]
+    var bestFriend: User?                       // Nested User object
+    var friends: [User]?                        // Array of Users
+    var birthday: Date?
+
+    required init?(map: Map) {
+
+    }
+
+    // Mappable
+    func mapping(map: Map) {
+        username    <- map["username"]
+        age         <- map["age"]
+        weight      <- map["weight"]
+        array       <- map["arr"]
+        dictionary  <- map["dict"]
+        bestFriend  <- map["best_friend"]
+        friends     <- map["friends"]
+        birthday    <- (map["birthday"], DateTransform())
+    }
+}
+
+let user = User(JSONString: JSONString)
+let JSONString = user.toJSONString(prettyPrint: true)
+```
+
+```
+struct Temperature: Mappable {
+    var celsius: Double?
+    var fahrenheit: Double?
+
+    init?(map: Map) {
+
+    }
+
+    mutating func mapping(map: Map) {
+        celsius     <- map["celsius"]
+        fahrenheit     <- map["fahrenheit"]
+    }
+}
+```
+
+`添加转换规则`
+
+```
+class People: Mappable {
+   var birthday: NSDate?
+
+   required init?(_ map: Map) {
+
+   }
+
+   func mapping(map: Map) {
+       birthday <- (map["birthday"], DateTransform())
+   }
+
+   let JSON = "\"birthday\":1458117795332"
+   let result = Mapper<People>().map(JSON)
+}
+```
+
+`嵌套模型`
+
+```
+{
+  "weather": "sun",
+    "temperature": {
+        "celsius": 70,
+        "fahrenheit": 34
+    },
+}
+
+
+class Weather<T: Mappable>: Mappable {
+
+    var weather: String?
+    var temperature: T?
+
+    required init?(map: Map) {
+
+    }
+
+    func mapping(map: Map) {
+        weather <- map["weather"]
+        temperature <- map["temperature"]
+    }
+}
+
+class Temperature: Mappable {
+
+    var celsius: Double?
+    var fahrenheit: Double?
+
+    required init?(map: Map) {
+
+    }
+
+    func mapping(map: Map) {
+        celsius <- map["celsius"]
+        fahrenheit <- map["fahrenheit"]
+    }
+}
+
+// 使用方法如下
+let weather = Mapper<Weather<Temperature>>().map(JSONString: json.rawString()!)
+
+```
+
+`解析模型中嵌套模型但是我们只需要拿到子模型的属性值`
+
+```
+{
+    "distance": {
+        "text": "102 ft",
+        "value": 31
+    }
+}
+
+class Distance: Mappable {
+    var text: String?
+    var value: Int?
+
+    required init?(map: Map) {
+
+    }
+
+    func mapping(map: Map) {
+        text <- map["distance.text"]
+        value <- map["distance.value"]
+    }
+
+}
+
+```
+
+`取model`
+
+```
+
+{
+    "status": "200",
+    "msg": "success",
+    "features": [
+       {
+         "name": "json解析"
+       },
+       {
+         "name": "模型转换"
+       },
+       {
+         "name": "数据处理"
+       },
+       {
+         "name": "mapper进阶"
+       }
+    ]
+}
+
+class Feature: Mappable {
+
+    var name: String?
+
+    required init?(map: Map) {
+
+    }
+
+    func mapping(map: Map) {
+        name <- map["name"]
+    }
+
+}
+
+
+
+```
